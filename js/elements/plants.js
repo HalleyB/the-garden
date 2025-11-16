@@ -39,6 +39,12 @@ export class Plant extends Element {
     }
 
     checkSurvival() {
+        // Die if health depleted (check first before any recovery)
+        if (this.health <= 0) {
+            this.die();
+            return;
+        }
+
         // Check moisture
         if (this.tile.moisture < CONFIG.MIN_MOISTURE_TO_SURVIVE) {
             this.cyclesWithoutWater++;
@@ -59,7 +65,7 @@ export class Plant extends Element {
             this.health -= 5;
         }
 
-        // Die if health depleted
+        // Check again after applying damage
         if (this.health <= 0) {
             this.die();
         }

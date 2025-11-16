@@ -290,12 +290,23 @@ export class Renderer {
     }
 
     handleMouseUp(e) {
+        console.log('🖱️ Mouse up - isDragging:', this.isDragging);
+
         if (!this.isDragging) {
             // Click event
             const tile = this.getTileAtScreenPosition(e.clientX, e.clientY);
+            console.log('🎯 Tile at click position:', tile ? `(${tile.x}, ${tile.y})` : 'null');
+
             if (tile && this.onTileClick) {
+                console.log('📞 Calling onTileClick handler');
                 this.onTileClick(tile);
+            } else if (!tile) {
+                console.warn('⚠️ Click was outside the grid');
+            } else if (!this.onTileClick) {
+                console.error('❌ onTileClick handler not set!');
             }
+        } else {
+            console.log('↔️ Ignoring click because user was dragging');
         }
 
         this.isDragging = false;
