@@ -3,6 +3,7 @@
 import { SimulationEngine } from './simulation/SimulationEngine.js';
 import { Renderer } from './rendering/Renderer.js';
 import { UIController } from './ui/UIController.js';
+import { TestingMode } from './testing/TestingMode.js';
 import { Plant } from './elements/plants.js';
 import { Environmental } from './elements/environmental.js';
 import { ELEMENT_TYPES } from './config.js';
@@ -12,6 +13,7 @@ class TheGarden {
         this.simulationEngine = null;
         this.renderer = null;
         this.uiController = null;
+        this.testingMode = null;
         this.animationFrameId = null;
     }
 
@@ -43,6 +45,13 @@ class TheGarden {
             // Create UI controller
             this.uiController = new UIController(this.simulationEngine, this.renderer);
 
+            // Initialize testing mode
+            this.testingMode = new TestingMode(
+                this.simulationEngine,
+                this.uiController.storage,
+                this.uiController
+            );
+
             // Start simulation
             this.simulationEngine.start();
 
@@ -50,6 +59,7 @@ class TheGarden {
             this.startRenderLoop();
 
             console.log('The Garden initialized successfully!');
+            console.log('💡 Press Ctrl/Cmd + T to open Testing Mode');
 
         } catch (error) {
             console.error('Failed to initialize The Garden:', error);
