@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Garden - Test Suite</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2C3E50;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495E;
+            margin-top: 30px;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #45A049;
+        }
+        .btn-secondary {
+            background: #95A5A6;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #7F8C8D;
+        }
+        .test-suite {
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .suite-header {
+            background: #34495E;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-case {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-case:last-child {
+            border-bottom: none;
+        }
+        .test-name {
+            flex: 1;
+        }
+        .test-status {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        .status-pending {
+            background: #E0E0E0;
+            color: #757575;
+        }
+        .status-running {
+            background: #FFF9C4;
+            color: #F57F17;
+        }
+        .status-passed {
+            background: #C8E6C9;
+            color: #2E7D32;
+        }
+        .status-failed {
+            background: #FFCDD2;
+            color: #C62828;
+        }
+        .test-error {
+            background: #FFEBEE;
+            color: #C62828;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+        }
+        .summary {
+            background: #E8F5E9;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .summary-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 10px;
+        }
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #E0E0E0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 The Garden - Automated Test Suite</h1>
+
+        <div class="controls">
+            <button class="btn-primary" onclick="runAllTests()">▶️ Run All Tests</button>
+            <button class="btn-secondary" onclick="clearResults()">🗑️ Clear Results</button>
+            <button class="btn-secondary" onclick="location.reload()">🔄 Reset</button>
+        </div>
+
+        <div class="summary" id="summary" style="display: none;">
+            <h3>Test Results Summary</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+            <div class="summary-stats">
+                <div class="stat">
+                    <span class="stat-value" id="total-tests">0</span>
+                    <span class="stat-label">Total Tests</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" style="color: #2E7D32;" id="passed-tests">0</span>
+                    <span class="stat-label">Passed</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" style="color: #C62828;" id="failed-tests">0</span>
+                    <span class="stat-label">Failed</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="duration">0ms</span>
+                    <span class="stat-label">Duration</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="test-suites"></div>
+    </div>
+
+    <script type="module">
+        import { runTests } from './test-suite.js';
+
+        window.runAllTests = async function() {
+            const startTime = Date.now();
+            document.getElementById('summary').style.display = 'block';
+
+            const results = await runTests();
+
+            const duration = Date.now() - startTime;
+            updateSummary(results, duration);
+        };
+
+        window.clearResults = function() {
+            document.getElementById('test-suites').innerHTML = '';
+            document.getElementById('summary').style.display = 'none';
+        };
+
+        function updateSummary(results, duration) {
+            const total = results.total;
+            const passed = results.passed;
+            const failed = results.failed;
+            const progress = (passed / total) * 100;
+
+            document.getElementById('total-tests').textContent = total;
+            document.getElementById('passed-tests').textContent = passed;
+            document.getElementById('failed-tests').textContent = failed;
+            document.getElementById('duration').textContent = duration + 'ms';
+            document.getElementById('progress').style.width = progress + '%';
+        }
+
+        // Make test results accessible globally
+        window.testResults = [];
+    </script>
+</body>
+</html>
