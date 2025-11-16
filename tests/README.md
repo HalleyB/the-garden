@@ -13,7 +13,7 @@ Comprehensive automated test suite for The Garden project.
 
 2. Open the test runner in your browser:
    ```
-   http://localhost:8000/tests/test-runner.html
+   http://localhost:8001/tests/test-runner.html
    ```
 
 3. Click "Run All Tests" to execute the full test suite

@@ -141,7 +141,7 @@ Here's the CORRECT step-by-step flow:
 
 After pulling the latest code, try:
 
-1. Open test runner: `http://localhost:8000/tests/test-runner.html`
+1. Open test runner: `http://localhost:8001/tests/test-runner.html`
 2. Run all tests
 3. Check if these tests now PASS:
    - ✅ Plant dies when health reaches 0

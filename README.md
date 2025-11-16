@@ -35,8 +35,8 @@ A persistent virtual ecosystem where each visitor contributes ONE element per da
    ```
 
    The server will:
-   - Try port 8000 first
-   - Automatically find the next available port if 8000 is in use
+   - Try port 8001 first
+   - Automatically find the next available port if 8001 is in use
    - Open your browser automatically
    - Show the URL in the console
 
@@ -44,22 +44,22 @@ A persistent virtual ecosystem where each visitor contributes ONE element per da
 
    Using Python 3:
    ```bash
-   python -m http.server 8000
+   python -m http.server 8001
    ```
 
    Using Python 2:
    ```bash
-   python -m SimpleHTTPServer 8000
+   python -m SimpleHTTPServer 8001
    ```
 
    Using npx:
    ```bash
-   npx http-server -p 8000
+   npx http-server -p 8001
    ```
 
 3. If using npm start, the browser will open automatically. Otherwise, navigate to:
    ```
-   http://localhost:8000
+   http://localhost:8001
    ```
 
 ## How to Play

@@ -2,7 +2,7 @@
 
 /**
  * Simple HTTP server that auto-detects available ports
- * Starts on port 8000 by default, or finds next available port
+ * Starts on port 8001 by default, or finds next available port
  */
 
 const http = require('http');
@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const DEFAULT_PORT = 8000;
+const DEFAULT_PORT = 8001;
 const MAX_PORT_TRIES = 10;
 
 // MIME types for different file extensions
@@ -98,7 +98,7 @@ function tryPort(port, attempt = 0) {
         const url = `http://localhost:${port}`;
         try {
             const start = process.platform === 'darwin' ? 'open' :
-                         process.platform === 'win32' ? 'start' : 'xdg-open';
+                process.platform === 'win32' ? 'start' : 'xdg-open';
             execSync(`${start} ${url}`, { stdio: 'ignore' });
             console.log('🌐 Opening browser...\n');
         } catch (err) {

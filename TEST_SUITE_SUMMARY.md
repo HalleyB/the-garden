@@ -34,7 +34,7 @@ npm start
 ### Step 2: Open Test Runner
 Navigate to:
 ```
-http://localhost:8000/tests/test-runner.html
+http://localhost:8001/tests/test-runner.html
 ```
 
 ### Step 3: Run Tests
@@ -99,7 +99,7 @@ The placement system may fail if:
 4. Look for errors
 
 #### Option 2: Run Tests
-1. Open test runner (http://localhost:8000/tests/test-runner.html)
+1. Open test runner (http://localhost:8001/tests/test-runner.html)
 2. Run all tests
 3. Check if placement tests pass
 4. Failed tests will show exact error
@@ -207,4 +207,4 @@ Assert.inRange(val, min, max)     // Check in range
 
 **The test suite is comprehensive and will help identify exactly what's breaking in the placement system!**
 
-Pull the latest code (`git pull`), then open `http://localhost:8000/tests/test-runner.html` and click "Run All Tests" to see what's failing.
+Pull the latest code (`git pull`), then open `http://localhost:8001/tests/test-runner.html` and click "Run All Tests" to see what's failing.
