@@ -129,9 +129,11 @@ export class UIController {
 
         if (!this.selectedElement) {
             console.log('ℹ️ No element selected - showing tile info');
-            // Show tile info
-            if (tile.entity) {
-                this.showTooltip(tile.entity.getDescription(), true);
+            // Show tile info for all entities on the tile
+            const entities = tile.getAllEntities();
+            if (entities.length > 0) {
+                const descriptions = entities.map(e => e.getDescription()).join('\n\n---\n\n');
+                this.showTooltip(descriptions, true);
             }
             return;
         }
@@ -153,9 +155,14 @@ export class UIController {
         if (!tile.canPlace(elementType)) {
             let reason = 'Cannot place element here.';
 
-            if (tile.isOccupied() && tile.entity.isAlive) {
+            const isAtmospheric = tile.isAtmosphericType(elementType);
+
+            if (isAtmospheric && tile.isAtmosphericOccupied() && tile.atmosphericEntity.isAlive) {
+                reason = 'The atmospheric layer is already occupied!';
+                console.warn('❌ Atmospheric layer occupied:', tile.atmosphericEntity.type.name);
+            } else if (!isAtmospheric && tile.isOccupied() && tile.groundEntity.isAlive) {
                 reason = 'This tile is already occupied!';
-                console.warn('❌ Tile occupied:', tile.entity.type.name);
+                console.warn('❌ Ground layer occupied:', tile.groundEntity.type.name);
             } else if (elementType.needsSunlight && tile.sunlight < elementType.minSunlight) {
                 reason = `${elementType.name} needs more sunlight! (${Math.round(tile.sunlight)}/${elementType.minSunlight})`;
                 console.warn('❌ Insufficient sunlight:', tile.sunlight, '<', elementType.minSunlight);
@@ -181,10 +188,12 @@ export class UIController {
             return;
         }
 
-        if (tile.entity) {
+        const entities = tile.getAllEntities();
+        if (entities.length > 0) {
             // Don't show tooltip during placement
             if (!this.selectedElement) {
-                this.showTooltip(tile.entity.getDescription());
+                const descriptions = entities.map(e => e.getDescription()).join('\n\n---\n\n');
+                this.showTooltip(descriptions);
             }
         } else if (this.selectedElement) {
             const elementType = ELEMENT_TYPES[this.selectedElement];
@@ -192,7 +201,13 @@ export class UIController {
 
             if (!canPlace) {
                 let reason = '';
-                if (elementType.needsSunlight && tile.sunlight < elementType.minSunlight) {
+                const isAtmospheric = tile.isAtmosphericType(elementType);
+
+                if (isAtmospheric && tile.isAtmosphericOccupied()) {
+                    reason = 'Atmospheric layer occupied';
+                } else if (!isAtmospheric && tile.isOccupied()) {
+                    reason = 'Tile occupied';
+                } else if (elementType.needsSunlight && tile.sunlight < elementType.minSunlight) {
                     reason = `Needs more sunlight (${Math.round(tile.sunlight)}/${elementType.minSunlight})`;
                 }
                 this.showTooltip(reason);

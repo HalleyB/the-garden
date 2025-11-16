@@ -7,10 +7,25 @@ export class Environmental extends Element {
     constructor(type, placedBy) {
         super(type, placedBy);
         this.hasActivated = false;
+        this.deadCycles = 0; // Track cycles since death
     }
 
     update(grid, season) {
-        if (!this.isAlive || !this.tile) return;
+        // Handle dead entities (remove atmospheric elements after 1 cycle)
+        if (!this.isAlive) {
+            this.deadCycles++;
+
+            // Atmospheric elements (clouds, sunbeams) disappear after 1 cycle
+            const isAtmospheric = this.type.id === 'RAIN_CLOUD' || this.type.id === 'SUNBEAM';
+
+            if (isAtmospheric && this.deadCycles >= 1 && this.tile) {
+                this.tile.removeEntity(this);
+            }
+
+            return;
+        }
+
+        if (!this.tile) return;
 
         this.age++;
 

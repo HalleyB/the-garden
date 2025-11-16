@@ -84,8 +84,15 @@ export class Grid {
         for (let y = 0; y < this.size; y++) {
             for (let x = 0; x < this.size; x++) {
                 const tile = this.tiles[y][x];
-                if (tile.entity && tile.entity.isAlive) {
-                    entities.push(tile.entity);
+
+                // Check ground entity
+                if (tile.groundEntity && tile.groundEntity.isAlive) {
+                    entities.push(tile.groundEntity);
+                }
+
+                // Check atmospheric entity
+                if (tile.atmosphericEntity && tile.atmosphericEntity.isAlive) {
+                    entities.push(tile.atmosphericEntity);
                 }
             }
         }
@@ -100,8 +107,15 @@ export class Grid {
         for (let y = 0; y < this.size; y++) {
             for (let x = 0; x < this.size; x++) {
                 const tile = this.tiles[y][x];
-                if (tile.entity && !tile.entity.isAlive) {
-                    entities.push(tile.entity);
+
+                // Check ground entity
+                if (tile.groundEntity && !tile.groundEntity.isAlive) {
+                    entities.push(tile.groundEntity);
+                }
+
+                // Check atmospheric entity
+                if (tile.atmosphericEntity && !tile.atmosphericEntity.isAlive) {
+                    entities.push(tile.atmosphericEntity);
                 }
             }
         }

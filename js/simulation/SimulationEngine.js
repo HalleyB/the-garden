@@ -101,9 +101,10 @@ export class SimulationEngine {
 
         for (const entity of deadEntities) {
             // Keep dead entities for a few cycles for visual effect
+            // (except atmospheric elements which are removed immediately in their update method)
             if (entity.age - entity.deathAge > 5) {
                 if (entity.tile) {
-                    entity.tile.removeEntity();
+                    entity.tile.removeEntity(entity);
                 }
             }
         }

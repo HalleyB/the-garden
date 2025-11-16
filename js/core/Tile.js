@@ -15,8 +15,14 @@ export class Tile {
         this.nutrients = CONFIG.INITIAL_NUTRIENTS;
         this.temperature = 20; // degrees celsius
 
-        // Entity on this tile (plant, animal, environmental element)
-        this.entity = null;
+        // Dual-layer entity system
+        // Ground layer: plants, boulders, compost
+        this.groundEntity = null;
+        // Atmospheric layer: rain clouds, sunbeams
+        this.atmosphericEntity = null;
+
+        // Backward compatibility
+        this.entity = null; // Will be deprecated
 
         // Effects from nearby elements
         this.effects = {
@@ -26,34 +32,96 @@ export class Tile {
         };
     }
 
+    // Check if an element type is atmospheric
+    isAtmosphericType(elementType) {
+        return elementType.id === 'RAIN_CLOUD' || elementType.id === 'SUNBEAM';
+    }
+
     // Place an entity on this tile
     placeEntity(entity) {
-        if (this.entity) {
-            return false; // Tile occupied
+        const isAtmospheric = this.isAtmosphericType(entity.type);
+
+        if (isAtmospheric) {
+            if (this.atmosphericEntity) {
+                return false; // Atmospheric layer occupied
+            }
+            this.atmosphericEntity = entity;
+        } else {
+            if (this.groundEntity) {
+                return false; // Ground layer occupied
+            }
+            this.groundEntity = entity;
         }
-        this.entity = entity;
+
         entity.tile = this;
+
+        // Update legacy entity reference (for backward compatibility)
+        this.entity = this.groundEntity || this.atmosphericEntity;
+
         return true;
     }
 
     // Remove entity from this tile
-    removeEntity() {
-        if (this.entity) {
-            this.entity.tile = null;
-            this.entity = null;
+    removeEntity(entity = null) {
+        if (entity) {
+            // Remove specific entity
+            if (this.groundEntity === entity) {
+                this.groundEntity.tile = null;
+                this.groundEntity = null;
+            }
+            if (this.atmosphericEntity === entity) {
+                this.atmosphericEntity.tile = null;
+                this.atmosphericEntity = null;
+            }
+        } else {
+            // Remove all entities (legacy behavior)
+            if (this.groundEntity) {
+                this.groundEntity.tile = null;
+                this.groundEntity = null;
+            }
+            if (this.atmosphericEntity) {
+                this.atmosphericEntity.tile = null;
+                this.atmosphericEntity = null;
+            }
         }
+
+        // Update legacy entity reference
+        this.entity = this.groundEntity || this.atmosphericEntity;
     }
 
     // Check if tile is occupied
     isOccupied() {
-        return this.entity !== null;
+        return this.groundEntity !== null;
+    }
+
+    // Check if atmospheric layer is occupied
+    isAtmosphericOccupied() {
+        return this.atmosphericEntity !== null;
+    }
+
+    // Get all entities on this tile
+    getAllEntities() {
+        const entities = [];
+        if (this.groundEntity) entities.push(this.groundEntity);
+        if (this.atmosphericEntity) entities.push(this.atmosphericEntity);
+        return entities;
     }
 
     // Check if placement is valid for a given element type
     canPlace(elementType) {
-        // Can't place if occupied (unless replacing dead)
-        if (this.entity && this.entity.isAlive) {
-            return false;
+        const isAtmospheric = this.isAtmosphericType(elementType);
+
+        // Check appropriate layer
+        if (isAtmospheric) {
+            // Can't place if atmospheric layer occupied (unless replacing dead)
+            if (this.atmosphericEntity && this.atmosphericEntity.isAlive) {
+                return false;
+            }
+        } else {
+            // Can't place if ground layer occupied (unless replacing dead)
+            if (this.groundEntity && this.groundEntity.isAlive) {
+                return false;
+            }
         }
 
         // Check sunlight requirements
@@ -127,6 +195,9 @@ export class Tile {
             sunlight: this.sunlight,
             nutrients: this.nutrients,
             temperature: this.temperature,
+            groundEntity: this.groundEntity ? this.groundEntity.toJSON() : null,
+            atmosphericEntity: this.atmosphericEntity ? this.atmosphericEntity.toJSON() : null,
+            // Legacy support
             entity: this.entity ? this.entity.toJSON() : null
         };
     }
@@ -139,43 +210,73 @@ export class Tile {
         tile.nutrients = data.nutrients;
         tile.temperature = data.temperature;
 
-        // Restore entity if present
-        if (data.entity) {
-            const elementType = ELEMENT_TYPES[data.entity.typeId];
-            if (elementType) {
-                let entity;
+        // Helper function to restore entity
+        const restoreEntity = (entityData) => {
+            if (!entityData) return null;
 
-                // Create appropriate entity type
-                if (elementType.category === 'plant') {
-                    entity = new Plant(elementType, data.entity.placedBy);
-                } else if (elementType.category === 'environmental') {
-                    entity = new Environmental(elementType, data.entity.placedBy);
-                }
+            const elementType = ELEMENT_TYPES[entityData.typeId];
+            if (!elementType) return null;
 
-                if (entity) {
-                    // Restore entity properties
-                    entity.id = data.entity.id;
-                    entity.placedAt = data.entity.placedAt;
-                    entity.age = data.entity.age;
-                    entity.isAlive = data.entity.isAlive;
-                    entity.health = data.entity.health;
-                    entity.growthProgress = data.entity.growthProgress || 0;
-                    entity.currentStage = data.entity.currentStage || 0;
+            let entity;
 
-                    // Link entity to tile
-                    tile.entity = entity;
-                    entity.tile = tile;
+            // Create appropriate entity type
+            if (elementType.category === 'plant') {
+                entity = new Plant(elementType, entityData.placedBy);
+            } else if (elementType.category === 'environmental') {
+                entity = new Environmental(elementType, entityData.placedBy);
+            }
+
+            if (entity) {
+                // Restore entity properties
+                entity.id = entityData.id;
+                entity.placedAt = entityData.placedAt;
+                entity.age = entityData.age;
+                entity.isAlive = entityData.isAlive;
+                entity.health = entityData.health;
+                entity.growthProgress = entityData.growthProgress || 0;
+                entity.currentStage = entityData.currentStage || 0;
+
+                // Link entity to tile
+                entity.tile = tile;
+            }
+
+            return entity;
+        };
+
+        // Restore ground entity
+        if (data.groundEntity) {
+            tile.groundEntity = restoreEntity(data.groundEntity);
+        }
+
+        // Restore atmospheric entity
+        if (data.atmosphericEntity) {
+            tile.atmosphericEntity = restoreEntity(data.atmosphericEntity);
+        }
+
+        // Legacy support - restore old single entity format
+        if (!tile.groundEntity && !tile.atmosphericEntity && data.entity) {
+            const entity = restoreEntity(data.entity);
+            if (entity) {
+                const isAtmospheric = tile.isAtmosphericType(entity.type);
+                if (isAtmospheric) {
+                    tile.atmosphericEntity = entity;
+                } else {
+                    tile.groundEntity = entity;
                 }
             }
         }
+
+        // Update legacy entity reference
+        tile.entity = tile.groundEntity || tile.atmosphericEntity;
 
         return tile;
     }
 
     // Get tile color for rendering (based on moisture and vegetation)
     getColor() {
-        if (this.entity && this.entity.isAlive) {
-            return this.entity.getColor();
+        // Ground entity takes priority for background color
+        if (this.groundEntity && this.groundEntity.isAlive) {
+            return this.groundEntity.getColor();
         }
 
         // Base soil color, tinted by moisture

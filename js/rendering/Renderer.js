@@ -137,22 +137,15 @@ export class Renderer {
             for (let x = 0; x < this.grid.size; x++) {
                 const tile = this.grid.tiles[y][x];
 
-                if (tile.entity) {
-                    const entity = tile.entity;
-
-                    // Only render ground-level entities (plants and permanent structures)
-                    const isGroundLevel =
-                        entity.type.category === 'plant' ||
-                        entity.type.id === 'BOULDER' ||
-                        entity.type.id === 'COMPOST_PILE';
-
-                    if (!isGroundLevel) continue;
-
-                    this.renderEntity(entity, x, y, tileSize);
+                // Render ground entity if present
+                if (tile.groundEntity) {
+                    this.renderEntity(tile.groundEntity, x, y, tileSize);
 
                     // Show health bar for plants
-                    if (entity.type.category === 'plant' && entity.isAlive && entity.health < 100) {
-                        this.renderHealthBar(x, y, entity.health);
+                    if (tile.groundEntity.type.category === 'plant' &&
+                        tile.groundEntity.isAlive &&
+                        tile.groundEntity.health < 100) {
+                        this.renderHealthBar(x, y, tile.groundEntity.health);
                     }
                 }
             }
@@ -166,17 +159,9 @@ export class Renderer {
             for (let x = 0; x < this.grid.size; x++) {
                 const tile = this.grid.tiles[y][x];
 
-                if (tile.entity) {
-                    const entity = tile.entity;
-
-                    // Only render atmospheric elements (clouds and sunbeams)
-                    const isAtmospheric =
-                        entity.type.id === 'RAIN_CLOUD' ||
-                        entity.type.id === 'SUNBEAM';
-
-                    if (!isAtmospheric) continue;
-
-                    this.renderEntity(entity, x, y, tileSize);
+                // Render atmospheric entity if present
+                if (tile.atmosphericEntity) {
+                    this.renderEntity(tile.atmosphericEntity, x, y, tileSize);
                 }
             }
         }
@@ -263,8 +248,9 @@ export class Renderer {
             for (let x = 0; x < this.grid.size; x++) {
                 const tile = this.grid.tiles[y][x];
 
-                if (tile.entity && tile.entity.isAlive) {
-                    ctx.fillStyle = tile.entity.getColor();
+                // Show ground entity color if present
+                if (tile.groundEntity && tile.groundEntity.isAlive) {
+                    ctx.fillStyle = tile.groundEntity.getColor();
                     ctx.fillRect(x * tileSize, y * tileSize, Math.max(1, tileSize), Math.max(1, tileSize));
                 } else {
                     // Show moisture
