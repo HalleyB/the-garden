@@ -82,8 +82,11 @@ export class Renderer {
         // Render grid
         this.renderGrid();
 
-        // Render entities
-        this.renderEntities();
+        // Render ground-level entities (plants, boulders, compost)
+        this.renderGroundLayer();
+
+        // Render atmospheric layer (rain clouds, sunbeams)
+        this.renderAtmosphericLayer();
 
         // Render hover highlight
         if (this.hoveredTile) {
@@ -127,7 +130,7 @@ export class Renderer {
         }
     }
 
-    renderEntities() {
+    renderGroundLayer() {
         const tileSize = CONFIG.TILE_SIZE;
 
         for (let y = 0; y < this.grid.size; y++) {
@@ -137,38 +140,15 @@ export class Renderer {
                 if (tile.entity) {
                     const entity = tile.entity;
 
-                    // Draw entity icon
-                    const icon = entity.getIcon();
-                    const fontSize = tileSize * 0.8;
+                    // Only render ground-level entities (plants and permanent structures)
+                    const isGroundLevel =
+                        entity.type.category === 'plant' ||
+                        entity.type.id === 'BOULDER' ||
+                        entity.type.id === 'COMPOST_PILE';
 
-                    this.ctx.font = `${fontSize}px Arial`;
-                    this.ctx.textAlign = 'center';
-                    this.ctx.textBaseline = 'middle';
+                    if (!isGroundLevel) continue;
 
-                    const centerX = x * tileSize + tileSize / 2;
-                    const centerY = y * tileSize + tileSize / 2;
-
-                    // Add shadow for living entities
-                    if (entity.isAlive) {
-                        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-                        this.ctx.shadowBlur = 4;
-                        this.ctx.shadowOffsetX = 2;
-                        this.ctx.shadowOffsetY = 2;
-                    }
-
-                    // Apply opacity for dead entities
-                    if (!entity.isAlive) {
-                        this.ctx.globalAlpha = 0.5;
-                    }
-
-                    this.ctx.fillText(icon, centerX, centerY);
-
-                    // Reset shadow and alpha
-                    this.ctx.shadowColor = 'transparent';
-                    this.ctx.shadowBlur = 0;
-                    this.ctx.shadowOffsetX = 0;
-                    this.ctx.shadowOffsetY = 0;
-                    this.ctx.globalAlpha = 1;
+                    this.renderEntity(entity, x, y, tileSize);
 
                     // Show health bar for plants
                     if (entity.type.category === 'plant' && entity.isAlive && entity.health < 100) {
@@ -177,6 +157,64 @@ export class Renderer {
                 }
             }
         }
+    }
+
+    renderAtmosphericLayer() {
+        const tileSize = CONFIG.TILE_SIZE;
+
+        for (let y = 0; y < this.grid.size; y++) {
+            for (let x = 0; x < this.grid.size; x++) {
+                const tile = this.grid.tiles[y][x];
+
+                if (tile.entity) {
+                    const entity = tile.entity;
+
+                    // Only render atmospheric elements (clouds and sunbeams)
+                    const isAtmospheric =
+                        entity.type.id === 'RAIN_CLOUD' ||
+                        entity.type.id === 'SUNBEAM';
+
+                    if (!isAtmospheric) continue;
+
+                    this.renderEntity(entity, x, y, tileSize);
+                }
+            }
+        }
+    }
+
+    renderEntity(entity, x, y, tileSize) {
+        // Draw entity icon
+        const icon = entity.getIcon();
+        const fontSize = tileSize * 0.8;
+
+        this.ctx.font = `${fontSize}px Arial`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+
+        const centerX = x * tileSize + tileSize / 2;
+        const centerY = y * tileSize + tileSize / 2;
+
+        // Add shadow for living entities
+        if (entity.isAlive) {
+            this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            this.ctx.shadowBlur = 4;
+            this.ctx.shadowOffsetX = 2;
+            this.ctx.shadowOffsetY = 2;
+        }
+
+        // Apply opacity for dead entities
+        if (!entity.isAlive) {
+            this.ctx.globalAlpha = 0.5;
+        }
+
+        this.ctx.fillText(icon, centerX, centerY);
+
+        // Reset shadow and alpha
+        this.ctx.shadowColor = 'transparent';
+        this.ctx.shadowBlur = 0;
+        this.ctx.shadowOffsetX = 0;
+        this.ctx.shadowOffsetY = 0;
+        this.ctx.globalAlpha = 1;
     }
 
     renderHealthBar(tileX, tileY, health) {
