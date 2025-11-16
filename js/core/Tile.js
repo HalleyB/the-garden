@@ -1,6 +1,8 @@
 // Tile.js - Represents a single tile in the grid
 
-import { CONFIG } from '../config.js';
+import { CONFIG, ELEMENT_TYPES } from '../config.js';
+import { Plant } from '../elements/plants.js';
+import { Environmental } from '../elements/environmental.js';
 
 export class Tile {
     constructor(x, y) {
@@ -136,6 +138,37 @@ export class Tile {
         tile.sunlight = data.sunlight;
         tile.nutrients = data.nutrients;
         tile.temperature = data.temperature;
+
+        // Restore entity if present
+        if (data.entity) {
+            const elementType = ELEMENT_TYPES[data.entity.typeId];
+            if (elementType) {
+                let entity;
+
+                // Create appropriate entity type
+                if (elementType.category === 'plant') {
+                    entity = new Plant(elementType, data.entity.placedBy);
+                } else if (elementType.category === 'environmental') {
+                    entity = new Environmental(elementType, data.entity.placedBy);
+                }
+
+                if (entity) {
+                    // Restore entity properties
+                    entity.id = data.entity.id;
+                    entity.placedAt = data.entity.placedAt;
+                    entity.age = data.entity.age;
+                    entity.isAlive = data.entity.isAlive;
+                    entity.health = data.entity.health;
+                    entity.growthProgress = data.entity.growthProgress || 0;
+                    entity.currentStage = data.entity.currentStage || 0;
+
+                    // Link entity to tile
+                    tile.entity = entity;
+                    entity.tile = tile;
+                }
+            }
+        }
+
         return tile;
     }
 
