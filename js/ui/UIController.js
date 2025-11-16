@@ -49,9 +49,16 @@ export class UIController {
     }
 
     setupEventListeners() {
+        // Check if tutorial has been seen
+        const tutorialSeen = localStorage.getItem('tutorial_seen');
+        if (tutorialSeen === 'true') {
+            this.tutorialOverlay.classList.add('hidden');
+        }
+
         // Tutorial
         this.startBtn.addEventListener('click', () => {
             this.tutorialOverlay.classList.add('hidden');
+            localStorage.setItem('tutorial_seen', 'true');
         });
 
         // Place button
@@ -66,7 +73,7 @@ export class UIController {
         this.renderer.onTileHover = (tile) => this.handleTileHover(tile);
 
         // Confirmation modal
-        this.confirmYes.addEventListener('click', () => this.executePlace ment());
+        this.confirmYes.addEventListener('click', () => this.executePlacement());
         this.confirmNo.addEventListener('click', () => this.closeConfirmModal());
 
         // Screenshot
