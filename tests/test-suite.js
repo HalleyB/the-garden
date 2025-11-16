@@ -232,6 +232,10 @@ export class Assert {
 
 // Export main test runner function
 export async function runTests() {
+    // Clear localStorage before running tests to ensure clean state
+    console.log('🧹 Clearing localStorage for clean test environment...');
+    localStorage.clear();
+
     const runner = new TestRunner();
 
     // Add all test suites

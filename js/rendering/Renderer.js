@@ -16,8 +16,11 @@ export class Renderer {
 
         // Interaction state
         this.isDragging = false;
+        this.mouseDownX = 0;
+        this.mouseDownY = 0;
         this.lastMouseX = 0;
         this.lastMouseY = 0;
+        this.dragThreshold = 5; // pixels - must move this far to be considered a drag
 
         // Hover state
         this.hoveredTile = null;
@@ -262,23 +265,43 @@ export class Renderer {
     }
 
     handleMouseDown(e) {
-        this.isDragging = true;
+        // Don't set isDragging yet - wait to see if they actually drag
+        this.mouseDownX = e.clientX;
+        this.mouseDownY = e.clientY;
         this.lastMouseX = e.clientX;
         this.lastMouseY = e.clientY;
+        console.log('🖱️ Mouse down at:', e.clientX, e.clientY);
     }
 
     handleMouseMove(e) {
-        if (this.isDragging) {
-            const dx = e.clientX - this.lastMouseX;
-            const dy = e.clientY - this.lastMouseY;
+        // Check if mouse button is pressed
+        if (e.buttons === 1) {
+            // Calculate distance from initial mouse down position
+            const dx = e.clientX - this.mouseDownX;
+            const dy = e.clientY - this.mouseDownY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
 
-            this.cameraX += dx;
-            this.cameraY += dy;
+            // Only start dragging if moved beyond threshold
+            if (distance > this.dragThreshold) {
+                if (!this.isDragging) {
+                    console.log('↔️ Started dragging (moved', Math.round(distance), 'pixels)');
+                    this.isDragging = true;
+                }
+            }
 
-            this.lastMouseX = e.clientX;
-            this.lastMouseY = e.clientY;
+            // If dragging, move camera
+            if (this.isDragging) {
+                const moveDx = e.clientX - this.lastMouseX;
+                const moveDy = e.clientY - this.lastMouseY;
+
+                this.cameraX += moveDx;
+                this.cameraY += moveDy;
+
+                this.lastMouseX = e.clientX;
+                this.lastMouseY = e.clientY;
+            }
         } else {
-            // Update hovered tile
+            // Mouse button not pressed - update hovered tile
             const tile = this.getTileAtScreenPosition(e.clientX, e.clientY);
             this.hoveredTile = tile;
 
@@ -340,30 +363,54 @@ export class Renderer {
     handleTouchStart(e) {
         if (e.touches.length === 1) {
             const touch = e.touches[0];
-            this.isDragging = true;
+            this.mouseDownX = touch.clientX;
+            this.mouseDownY = touch.clientY;
             this.lastMouseX = touch.clientX;
             this.lastMouseY = touch.clientY;
+            this.isDragging = false; // Don't assume dragging yet
         }
     }
 
     handleTouchMove(e) {
         e.preventDefault();
 
-        if (e.touches.length === 1 && this.isDragging) {
+        if (e.touches.length === 1) {
             const touch = e.touches[0];
-            const dx = touch.clientX - this.lastMouseX;
-            const dy = touch.clientY - this.lastMouseY;
 
-            this.cameraX += dx;
-            this.cameraY += dy;
+            // Calculate distance from initial touch
+            const dx = touch.clientX - this.mouseDownX;
+            const dy = touch.clientY - this.mouseDownY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
 
-            this.lastMouseX = touch.clientX;
-            this.lastMouseY = touch.clientY;
+            // Only start dragging if moved beyond threshold
+            if (distance > this.dragThreshold) {
+                this.isDragging = true;
+            }
+
+            // If dragging, move camera
+            if (this.isDragging) {
+                const moveDx = touch.clientX - this.lastMouseX;
+                const moveDy = touch.clientY - this.lastMouseY;
+
+                this.cameraX += moveDx;
+                this.cameraY += moveDy;
+
+                this.lastMouseX = touch.clientX;
+                this.lastMouseY = touch.clientY;
+            }
         }
     }
 
     handleTouchEnd(e) {
         if (e.touches.length === 0) {
+            // If not dragging, it's a tap/click
+            if (!this.isDragging) {
+                const tile = this.getTileAtScreenPosition(this.mouseDownX, this.mouseDownY);
+                if (tile && this.onTileClick) {
+                    this.onTileClick(tile);
+                }
+            }
+
             this.isDragging = false;
         }
     }
