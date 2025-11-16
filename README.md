@@ -27,24 +27,37 @@ A persistent virtual ecosystem where each visitor contributes ONE element per da
 
 1. Clone or download this repository
 
-2. Start a local web server in the project directory:
+2. Start the development server:
 
-   **Using Python 3:**
+   **Recommended (auto-detects available port):**
+   ```bash
+   npm start
+   ```
+
+   The server will:
+   - Try port 8000 first
+   - Automatically find the next available port if 8000 is in use
+   - Open your browser automatically
+   - Show the URL in the console
+
+   **Alternative methods:**
+
+   Using Python 3:
    ```bash
    python -m http.server 8000
    ```
 
-   **Using Python 2:**
+   Using Python 2:
    ```bash
    python -m SimpleHTTPServer 8000
    ```
 
-   **Using Node.js:**
+   Using npx:
    ```bash
    npx http-server -p 8000
    ```
 
-3. Open your browser and navigate to:
+3. If using npm start, the browser will open automatically. Otherwise, navigate to:
    ```
    http://localhost:8000
    ```
