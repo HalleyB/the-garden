@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Garden - A Collaborative Ecosystem</title>
+    <meta name="description" content="A persistent virtual ecosystem where each visitor contributes one element per day">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Tutorial Overlay -->
+    <div id="tutorial-overlay" class="overlay">
+        <div class="tutorial-content">
+            <h2>Welcome to The Garden 🌱</h2>
+            <p>Every person adds <strong>ONE thing per day</strong></p>
+            <p>The garden evolves based on everyone's choices</p>
+            <p>Will your plant survive?</p>
+            <button id="start-btn" class="btn-primary">Start Gardening</button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="app">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="logo">
+                <h1>🌱 The Garden</h1>
+            </div>
+            <div class="header-controls">
+                <button id="screenshot-btn" class="btn-icon" title="Take Screenshot">📷</button>
+                <button id="info-btn" class="btn-icon" title="Info">ℹ️</button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Canvas Container -->
+            <div id="canvas-container" class="canvas-container">
+                <canvas id="garden-canvas"></canvas>
+
+                <!-- Minimap -->
+                <div id="minimap" class="minimap">
+                    <canvas id="minimap-canvas"></canvas>
+                </div>
+
+                <!-- Placement Timer -->
+                <div id="timer-display" class="timer-display">
+                    <div id="timer-text">Place your element!</div>
+                </div>
+            </div>
+
+            <!-- Side Panel -->
+            <aside id="side-panel" class="side-panel">
+                <!-- Element Selection -->
+                <section class="panel-section">
+                    <h3>Place Element</h3>
+                    <div id="element-selection" class="element-grid">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                    <button id="place-btn" class="btn-primary" disabled>Select an element</button>
+                </section>
+
+                <!-- Stats -->
+                <section class="panel-section">
+                    <h3>Garden Stats</h3>
+                    <div id="stats">
+                        <div class="stat-row">
+                            <span>Total Elements:</span>
+                            <span id="stat-total">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Living Plants:</span>
+                            <span id="stat-plants">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Avg. Moisture:</span>
+                            <span id="stat-moisture">0%</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Ecosystem Health:</span>
+                            <span id="stat-health">0%</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Leaderboard -->
+                <section class="panel-section">
+                    <h3>Leaderboard</h3>
+                    <div id="leaderboard">
+                        <div class="leaderboard-empty">No elements yet!</div>
+                    </div>
+                </section>
+
+                <!-- Your Contributions -->
+                <section class="panel-section">
+                    <h3>Your Contributions</h3>
+                    <div id="contributions">
+                        <div class="contribution-empty">Place your first element!</div>
+                    </div>
+                </section>
+            </aside>
+        </div>
+
+        <!-- Element Info Tooltip -->
+        <div id="tooltip" class="tooltip hidden">
+            <div id="tooltip-content"></div>
+        </div>
+
+        <!-- Placement Confirmation Modal -->
+        <div id="confirm-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 id="confirm-title">Confirm Placement</h3>
+                <p id="confirm-description"></p>
+                <div class="modal-actions">
+                    <button id="confirm-yes" class="btn-primary">Place It!</button>
+                    <button id="confirm-no" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
