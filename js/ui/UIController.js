@@ -120,7 +120,15 @@ export class UIController {
     }
 
     handleTileClick(tile) {
+        console.log('🖱️ Tile clicked:', tile ? `(${tile.x}, ${tile.y})` : 'null');
+
+        if (!tile) {
+            console.error('❌ Tile is null - click might be outside grid');
+            return;
+        }
+
         if (!this.selectedElement) {
+            console.log('ℹ️ No element selected - showing tile info');
             // Show tile info
             if (tile.entity) {
                 this.showTooltip(tile.entity.getDescription(), true);
@@ -128,11 +136,16 @@ export class UIController {
             return;
         }
 
+        console.log('✅ Element selected:', this.selectedElement);
+
         // Check if can place
         if (!this.storage.canPlaceToday()) {
+            console.warn('⏰ Placement cooldown active');
             alert('You can only place one element per day! Come back tomorrow.');
             return;
         }
+
+        console.log('✅ Can place today');
 
         const elementType = ELEMENT_TYPES[this.selectedElement];
 
@@ -142,17 +155,24 @@ export class UIController {
 
             if (tile.isOccupied() && tile.entity.isAlive) {
                 reason = 'This tile is already occupied!';
+                console.warn('❌ Tile occupied:', tile.entity.type.name);
             } else if (elementType.needsSunlight && tile.sunlight < elementType.minSunlight) {
-                reason = `${elementType.name} needs more sunlight! (${tile.sunlight}/${elementType.minSunlight})`;
+                reason = `${elementType.name} needs more sunlight! (${Math.round(tile.sunlight)}/${elementType.minSunlight})`;
+                console.warn('❌ Insufficient sunlight:', tile.sunlight, '<', elementType.minSunlight);
             }
 
             alert(reason);
             return;
         }
 
+        console.log('✅ Tile is valid for placement');
+
         // Select tile
         this.renderer.selectTile(tile.x, tile.y);
         this.placeBtn.disabled = false;
+        this.placeBtn.textContent = `Click to Place ${elementType.name}`;
+
+        console.log('🎯 Tile selected! Click the "Place Element" button in the sidebar to confirm.');
     }
 
     handleTileHover(tile) {
